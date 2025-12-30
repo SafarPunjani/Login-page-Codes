@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Login</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --dirt-brown: #8B5A2B;
+            --grass-green: #5D8C3E;
+            --stone-gray: #7F7F7F;
+            --wood-brown: #9C6B30;
+            --dark-bg: #1a1a2e;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            image-rendering: pixelated;
+        }
+
+        /* ===== LOGIN SCREEN ===== */
+        .login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            transition: opacity 1s ease, transform 1s ease;
+        }
+
+        .login-screen.hidden {
+            opacity: 0;
+            transform: scale(1.5);
+            pointer-events: none;
+        }
+
+        /* Background World */
+        .world-background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #87CEEB 0%, #87CEEB 60%, #5D8C3E 60%, #5D8C3E 70%, #8B5A2B 70%);
+            overflow: hidden;
+        }
+
+        /* Sun */
+        .sun {
+            position: absolute;
+            top: 10%;
+            right: 15%;
+            width: 80px;
+            height: 80px;
+            background: #FFEB3B;
+            box-shadow: 0 0 60px #FFEB3B, 0 0 100px #FFA000;
+            animation: sunGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes sunGlow {
+            0%, 100% { box-shadow: 0 0 60px #FFEB3B, 0 0 100px #FFA000; }
+            50% { box-shadow: 0 0 80px #FFEB3B, 0 0 120px #FFA000; }
+        }
+
+        /* Clouds */
+        .clouds {
+            position: absolute;
+            width: 100%;
+            height: 50%;
+            top: 0;
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            animation: cloudMove 60s linear infinite;
+        }
+
+        .cloud::before, .cloud::after {
+            content: '';
+            position: absolute;
+            background: inherit;
+        }
+
+        .cloud-1 { top: 15%; left: -200px; width: 100px; height: 40px; animation-duration: 45s; }
+        .cloud-1::before { width: 50px; height: 50px; top: -25px; left: 15px; }
+        .cloud-1::after { width: 60px; height: 45px; top: -15px; left: 45px; }
+
+        .cloud-2 { top: 25%; left: -300px; width: 120px; height: 50px; animation-duration: 55s; animation-delay: -20s; }
+        .cloud-2::before { width: 60px; height: 60px; top: -30px; left: 20px; }
+        .cloud-2::after { width: 70px; height: 55px; top: -20px; left: 55px; }
+
+        .cloud-3 { top: 10%; left: -150px; width: 80px; height: 35px; animation-duration: 50s; animation-delay: -35s; }
+        .cloud-3::before { width: 45px; height: 45px; top: -22px; left: 10px; }
+        .cloud-3::after { width: 50px; height: 40px; top: -12px; left: 35px; }
+
+        @keyframes cloudMove {
+            from { transform: translateX(0); }
+            to { transform: translateX(calc(100vw + 400px)); }
+        }
+
+        /* Ground Blocks */
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 40%;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-end;
+        }
+
+        .ground-row {
+            display: flex;
+            width: 100%;
+        }
+
+        .block {
+            width: 50px;
+            height: 50px;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .grass-block {
+            background: linear-gradient(180deg, #5D8C3E 0%, #5D8C3E 20%, #8B5A2B 20%);
+        }
+
+        .grass-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 30%;
+            background: 
+                repeating-linear-gradient(90deg, #4A7A2E 0px, #4A7A2E 5px, #5D8C3E 5px, #5D8C3E 10px);
+        }
+
+        .dirt-block {
+            background: #8B5A2B;
+            box-shadow: inset 2px 2px 0 #A0693D, inset -2px -2px 0 #6B4423;
+        }
+
+        .dirt-block::before {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #6B4423;
+            top: 20%;
+            left: 30%;
+        }
+
+        .dirt-block::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #A0693D;
+            top: 60%;
+            left: 60%;
+        }
+
+        /* Trees */
+        .tree {
+            position: absolute;
+            bottom: 30%;
+        }
+
+        .tree-trunk {
+            width: 30px;
+            height: 80px;
+            background: linear-gradient(90deg, #6B4423 0%, #8B5A2B 50%, #6B4423 100%);
+            margin: 0 auto;
+        }
+
+        .tree-leaves {
+            width: 90px;
+            height: 90px;
+            background: #228B22;
+            position: relative;
+            left: -30px;
+            box-shadow: 
+                inset 5px 5px 0 #2EA82E,
+                inset -5px -5px 0 #1B6B1B;
+        }
+
+        .tree-leaves::before {
+            content: '';
+            position: absolute;
+            width: 70px;
+            height: 30px;
+            background: #228B22;
+            top: -25px;
+            left: 10px;
+            box-shadow: 
+                inset 3px 3px 0 #2EA82E,
+                inset -3px -3px 0 #1B6B1B;
+        }
+
+        .tree-1 { left: 5%; }
+        .tree-2 { left: 85%; }
+        .tree-3 { left: 45%; transform: scale(0.8); }
+
+        /* Minecraft Characters */
+        .character {
+            position: absolute;
+            bottom: 30%;
+            image-rendering: pixelated;
+        }
+
+        /* Steve Character */
+        .steve {
+            width: 40px;
+            height: 80px;
+            left: 20%;
+            animation: steveWalk 4s ease-in-out infinite;
+        }
+
+        .steve-head {
+            width: 32px;
+            height: 32px;
+            background: #C69C6D;
+            margin: 0 auto;
+            position: relative;
+            box-shadow: inset 2px 2px 0 #DEB887;
+        }
+
+        .steve-head::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            background: #4A3728;
+        }
+
+        .steve-eyes {
+            position: absolute;
+            top: 45%;
+            left: 15%;
+            width: 70%;
+            height: 15%;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .steve-eyes::before, .steve-eyes::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: #FFF;
+        }
+
+        .steve-body {
+            width: 32px;
+            height: 28px;
+            background: #00A8A8;
+            margin: 0 auto;
+        }
+
+        .steve-legs {
+            display: flex;
+            justify-content: center;
+            gap: 2px;
+        }
+
+        .steve-leg {
+            width: 14px;
+            height: 20px;
+            background: #3B5998;
+            animation: legMove 0.5s ease-in-out infinite alternate;
+        }
+
+        .steve-leg:last-child {
+            animation-delay: 0.25s;
+        }
+
+        @keyframes steveWalk {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(50px); }
+        }
+
+        @keyframes legMove {
+            from { transform: rotateX(-20deg); }
+            to { transform: rotateX(20deg); }
+        }
+
+        /* Alex Character - Farming */
+        .alex {
+            width: 40px;
+            height: 80px;
+            left: 60%;
+            animation: alexFarm 2s ease-in-out infinite;
+        }
+
+        .alex-head {
+            width: 32px;
+            height: 32px;
+            background: #FDBF6F;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .alex-head::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: #FF6B35;
+        }
+
+        .alex-body {
+            width: 28px;
+            height: 28px;
+            background: #7CB342;
+            margin: 0 auto;
+        }
+
+        .alex-arm {
+            position: absolute;
+            width: 8px;
+            height: 24px;
+            background: #FDBF6F;
+            top: 32px;
+        }
+
+        .alex-arm-left {
+            left: 0;
+            transform-origin: top center;
+            animation: armSwing 1s ease-in-out infinite;
+        }
+
+        .alex-arm-right {
+            right: 0;
+            transform-origin: top center;
+            animation: armSwing 1s ease-in-out infinite reverse;
+        }
+
+        .alex-hoe {
+            position: absolute;
+            right: -15px;
+            top: 30px;
+            width: 5px;
+            height: 40px;
+            background: #8B5A2B;
+            transform-origin: top center;
+            animation: hoeSwing 2s ease-in-out infinite;
+        }
+
+        .alex-hoe::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -8px;
+            width: 20px;
+            height: 8px;
+            background: #757575;
+        }
+
+        @keyframes alexFarm {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes armSwing {
+            0%, 100% { transform: rotateZ(-30deg); }
+            50% { transform: rotateZ(30deg); }
+        }
+
+        @keyframes hoeSwing {
+            0%, 100% { transform: rotateZ(0deg); }
+            50% { transform: rotateZ(-60deg); }
+        }
+
+        /* Animals */
+        .animal {
+            position: absolute;
+            bottom: 30%;
+            animation: animalWalk 8s linear infinite;
+        }
+
+        /* Pig */
+        .pig {
+            left: -60px;
+            animation-duration: 12s;
+        }
+
+        .pig-body {
+            width: 50px;
+            height: 30px;
+            background: #FFB6C1;
+            position: relative;
+            border-radius: 3px;
+        }
+
+        .pig-head {
+            width: 25px;
+            height: 25px;
+            background: #FFB6C1;
+            position: absolute;
+            left: -15px;
+            top: -5px;
+        }
+
+        .pig-snout {
+            width: 12px;
+            height: 10px;
+            background: #FF9AA2;
+            position: absolute;
+            left: -5px;
+            top: 8px;
+        }
+
+        .pig-snout::before, .pig-snout::after {
+            content: '';
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #333;
+            top: 3px;
+        }
+
+        .pig-snout::before { left: 2px; }
+        .pig-snout::after { right: 2px; }
+
+        .pig-legs {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 5px;
+        }
+
+        .pig-leg {
+            width: 8px;
+            height: 12px;
+            background: #FFB6C1;
+            animation: pigLegMove 0.3s ease-in-out infinite alternate;
+        }
+
+        .pig-leg:nth-child(2), .pig-leg:nth-child(4) {
+            animation-delay: 0.15s;
+        }
+
+        @keyframes pigLegMove {
+            from { height: 12px; }
+            to { height: 10px; }
+        }
+
+        /* Cow */
+        .cow {
+            left: -80px;
+            animation-duration: 15s;
+            animation-delay: -5s;
+        }
+
+        .cow-body {
+            width: 60px;
+            height: 35px;
+            background: linear-gradient(90deg, #F5F5F5 0%, #F5F5F5 30%, #333 30%, #333 50%, #F5F5F5 50%, #F5F5F5 80%, #333 80%);
+            position: relative;
+        }
+
+        .cow-head {
+            width: 28px;
+            height: 28px;
+            background: #F5F5F5;
+            position: absolute;
+            left: -18px;
+            top: -5px;
+        }
+
+        .cow-head::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 15px;
+            height: 12px;
+            background: #FFB6C1;
+        }
+
+        .cow-horns {
+            position: absolute;
+            top: -8px;
+            left: 2px;
+            width: 100%;
+        }
+
+        .cow-horn {
+            width: 6px;
+            height: 10px;
+            background: #E0E0E0;
+            position: absolute;
+        }
+
+        .cow-horn:first-child { left: 0; }
+        .cow-horn:last-child { right: 8px; }
+
+        .cow-legs {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 8px;
+        }
+
+        .cow-leg {
+            width: 10px;
+            height: 15px;
+            background: #333;
+            animation: cowLegMove 0.4s ease-in-out infinite alternate;
+        }
+
+        .cow-leg:nth-child(2), .cow-leg:nth-child(4) {
+            animation-delay: 0.2s;
+        }
+
+        @keyframes cowLegMove {
+            from { height: 15px; }
+            to { height: 12px; }
+        }
+
+        /* Chicken */
+        .chicken {
+            left: -40px;
+            animation-duration: 8s;
+            animation-delay: -2s;
+            bottom: 31%;
+        }
+
+        .chicken-body {
+            width: 25px;
+            height: 20px;
+            background: #FFF;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .chicken-head {
+            width: 15px;
+            height: 15px;
+            background: #FFF;
+            border-radius: 50%;
+            position: absolute;
+            left: -8px;
+            top: -10px;
+        }
+
+        .chicken-beak {
+            width: 8px;
+            height: 5px;
+            background: #FFA000;
+            position: absolute;
+            left: -8px;
+            top: 3px;
+        }
+
+        .chicken-wattle {
+            width: 5px;
+            height: 8px;
+            background: #F44336;
+            position: absolute;
+            left: -3px;
+            top: 8px;
+        }
+
+        .chicken-legs {
+            position: absolute;
+            bottom: -10px;
+            display: flex;
+            gap: 8px;
+            left: 5px;
+        }
+
+        .chicken-leg-part {
+            width: 3px;
+            height: 10px;
+            background: #FFA000;
+            animation: chickenWalk 0.2s ease-in-out infinite alternate;
+        }
+
+        .chicken-leg-part:last-child {
+            animation-delay: 0.1s;
+        }
+
+        @keyframes chickenWalk {
+            from { transform: rotateZ(-15deg); }
+            to { transform: rotateZ(15deg); }
+        }
+
+        @keyframes animalWalk {
+            from { transform: translateX(0); }
+            to { transform: translateX(calc(100vw + 100px)); }
+        }
+
+        /* Crops */
+        .crops {
+            position: absolute;
+            bottom: 30%;
+            left: 55%;
+            display: flex;
+            gap: 10px;
+        }
+
+        .wheat {
+            width: 15px;
+            height: 40px;
+            background: linear-gradient(180deg, #FFD700 0%, #FFD700 30%, #228B22 30%);
+            animation: wheatSway 2s ease-in-out infinite;
+        }
+
+        .wheat:nth-child(2) { animation-delay: 0.3s; height: 35px; }
+        .wheat:nth-child(3) { animation-delay: 0.6s; height: 38px; }
+        .wheat:nth-child(4) { animation-delay: 0.9s; height: 42px; }
+
+        @keyframes wheatSway {
+            0%, 100% { transform: rotateZ(-5deg); }
+            50% { transform: rotateZ(5deg); }
+        }
+
+        /* ===== LOGIN BOX ===== */
+        .login-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        .login-box {
+            background: rgba(0, 0, 0, 0.75);
+            border: 4px solid #555;
+            padding: 30px 40px;
+            min-width: 320px;
+            box-shadow: 
+                inset 0 0 0 2px #333,
+                0 0 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .login-box::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            bottom: 4px;
+            border: 2px solid #3a3a3a;
+            pointer-events: none;
+        }
+
+        .login-title {
+            text-align: center;
+            color: #FFF;
+            font-size: 32px;
+            margin-bottom: 30px;
+            text-shadow: 3px 3px 0 #3F3F3F;
+            letter-spacing: 2px;
+        }
+
+        .minecraft-logo {
+            display: block;
+            margin: 0 auto 20px;
+            font-size: 28px;
+            color: #5D8C3E;
+            text-shadow: 2px 2px 0 #333;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            color: #A0A0A0;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .minecraft-input {
+            width: 100%;
+            padding: 12px 15px;
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 3px solid #1E1E1E;
+            color: #FFF;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 
+                inset 2px 2px 0 #0a0a0a,
+                inset -2px -2px 0 #2a2a2a;
+        }
+
+        .minecraft-input:focus {
+            border-color: #5D8C3E;
+            box-shadow: 
+                inset 2px 2px 0 #0a0a0a,
+                inset -2px -2px 0 #2a2a2a,
+                0 0 10px rgba(93, 140, 62, 0.5);
+        }
+
+        .minecraft-input::placeholder {
+            color: #666;
+        }
+
+        /* Steve Head Button */
+        .login-btn-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .login-btn {
+            position: relative;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            transition: transform 0.1s ease;
+        }
+
+        .login-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .login-btn:active {
+            transform: scale(0.95);
+        }
+
+        .steve-head-btn {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            image-rendering: pixelated;
+        }
+
+        .steve-face {
+            width: 100%;
+            height: 100%;
+            background: #C69C6D;
+            position: relative;
+            box-shadow: 
+                4px 4px 0 #8B6914,
+                inset 0 0 0 4px rgba(255, 255, 255, 0.1);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .login-btn:hover .steve-face {
+            box-shadow: 
+                4px 4px 0 #8B6914,
+                inset 0 0 0 4px rgba(255, 255, 255, 0.1),
+                0 0 20px rgba(93, 140, 62, 0.8);
+        }
+
+        .steve-hair {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            background: linear-gradient(180deg, #4A3728 0%, #3D2B1F 100%);
+        }
+
+        .steve-face-eyes {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+        }
+
+        .steve-eye {
+            width: 12px;
+            height: 12px;
+            background: #FFF;
+            position: relative;
+        }
+
+        .steve-eye::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            width: 6px;
+            height: 12px;
+            background: #6B4423;
+        }
+
+        .steve-nose {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 6px;
+            background: #A67B5B;
+        }
+
+        .steve-mouth {
+            position: absolute;
+            top: 75%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 6px;
+            background: #8B6914;
+        }
+
+        .login-text {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #5D8C3E;
+            font-size: 20px;
+            white-space: nowrap;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        /* Click Animation */
+        .login-btn.clicked .steve-face {
+            animation: headShake 0.5s ease;
+        }
+
+        @keyframes headShake {
+            0%, 100% { transform: rotateZ(0); }
+            25% { transform: rotateZ(-10deg); }
+            75% { transform: rotateZ(10deg); }
+        }
+
+        /* ===== WELCOME SCREEN ===== */
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.5s ease;
+        }
+
+        .welcome-screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .minecraft-world {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Dynamic Sky */
+        .dynamic-sky {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, 
+                #1a1a2e 0%, 
+                #16213e 20%, 
+                #0f3460 40%, 
+                #87CEEB 60%, 
+                #87CEEB 100%);
+            animation: skyTransition 5s ease forwards;
+        }
+
+        @keyframes skyTransition {
+            0% { 
+                background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            }
+            100% { 
+                background: linear-gradient(180deg, #87CEEB 0%, #87CEEB 70%, #5D8C3E 100%);
+            }
+        }
+
+        /* Stars */
+        .stars {
+            position: absolute;
+            width: 100%;
+            height: 60%;
+            animation: starsDisappear 3s ease forwards;
+        }
+
+        .star {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #FFF;
+            animation: starTwinkle 1s ease-in-out infinite;
+        }
+
+        @keyframes starTwinkle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        @keyframes starsDisappear {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* 3D World Container */
+        .world-3d {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            perspective: 1000px;
+            perspective-origin: 50% 50%;
+        }
+
+        .world-ground {
+            position: absolute;
+            bottom: 0;
+            width: 300%;
+            height: 50%;
+            left: -100%;
+            background: 
+                repeating-linear-gradient(90deg, 
+                    #5D8C3E 0px, #5D8C3E 50px, 
+                    #4A7A2E 50px, #4A7A2E 100px);
+            transform: rotateX(60deg);
+            transform-origin: bottom center;
+            animation: groundPan 20s linear infinite;
+        }
+
+        @keyframes groundPan {
+            from { transform: rotateX(60deg) translateX(0); }
+            to { transform: rotateX(60deg) translateX(100px); }
+        }
+
+        /* Camera Movement */
+        .camera-view {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            animation: cameraMove 15s ease-in-out infinite;
+        }
+
+        @keyframes cameraMove {
+            0% { transform: translateX(0) translateY(0); }
+            25% { transform: translateX(-30px) translateY(-20px); }
+            50% { transform: translateX(20px) translateY(10px); }
+            75% { transform: translateX(-10px) translateY(-30px); }
+            100% { transform: translateX(0) translateY(0); }
+        }
+
+        /* World Elements */
+        .world-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .world-tree {
+            position: absolute;
+            transform-origin: bottom center;
+        }
+
+        .world-tree-1 { left: 10%; bottom: 30%; transform: scale(1.5); }
+        .world-tree-2 { left: 30%; bottom: 25%; transform: scale(1.2); }
+        .world-tree-3 { left: 70%; bottom: 28%; transform: scale(1.8); }
+        .world-tree-4 { left: 85%; bottom: 32%; transform: scale(1.3); }
+
+        /* Mountains */
+        .mountains {
+            position: absolute;
+            bottom: 25%;
+            width: 100%;
+            height: 40%;
+        }
+
+        .mountain {
+            position: absolute;
+            bottom: 0;
+            border-left: 100px solid transparent;
+            border-right: 100px solid transparent;
+            border-bottom: 150px solid #7F7F7F;
+        }
+
+        .mountain::before {
+            content: '';
+            position: absolute;
+            bottom: -150px;
+            left: -50px;
+            border-left: 50px solid transparent;
+            border-right: 50px solid transparent;
+            border-bottom: 40px solid #FFF;
+        }
+
+        .mountain-1 { left: 20%; border-bottom-color: #8B8B8B; }
+        .mountain-2 { left: 50%; transform: scale(1.3); border-bottom-color: #7F7F7F; }
+        .mountain-3 { left: 75%; transform: scale(0.8); border-bottom-color: #999; }
+
+        /* Welcome Message */
+        .welcome-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 100;
+            opacity: 0;
+            animation: welcomeFadeIn 2s ease 1.5s forwards;
+        }
+
+        @keyframes welcomeFadeIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .welcome-title {
+            font-size: 64px;
+            color: #FFF;
+            text-shadow: 
+                4px 4px 0 #3F3F3F,
+                8px 8px 0 rgba(0, 0, 0, 0.3);
+            letter-spacing: 4px;
+            animation: titlePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .welcome-subtitle {
+            font-size: 32px;
+            color: #5D8C3E;
+            text-shadow: 2px 2px 0 #000;
+            margin-top: 20px;
+            animation: subtitleSlide 1s ease 2s forwards;
+            opacity: 0;
+        }
+
+        @keyframes subtitleSlide {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Particles */
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #5D8C3E;
+            animation: particleFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes particleFloat {
+            0%, 100% { 
+                transform: translateY(0) rotate(0deg);
+                opacity: 0;
+            }
+            50% { 
+                transform: translateY(-100px) rotate(180deg);
+                opacity: 1;
+            }
+        }
+
+        /* ===== MOBILE STYLES ===== */
+        @media (max-width: 768px) {
+            .login-box {
+                min-width: 280px;
+                padding: 25px 30px;
+                margin: 0 20px;
+            }
+
+            .login-title {
+                font-size: 26px;
+            }
+
+            .minecraft-logo {
+                font-size: 22px;
+            }
+
+            .minecraft-input {
+                padding: 10px 12px;
+                font-size: 18px;
+            }
+
+            .steve-head-btn {
+                width: 70px;
+                height: 70px;
+            }
+
+            .login-text {
+                font-size: 16px;
+            }
+
+            .block {
+                width: 30px;
+                height: 30px;
+            }
+
+            .tree {
+                transform: scale(0.7);
+            }
+
+            .steve, .alex {
+                transform: scale(0.8);
+            }
+
+            .sun {
+                width: 50px;
+                height: 50px;
+            }
+
+            .welcome-title {
+                font-size: 36px;
+            }
+
+            .welcome-subtitle {
+                font-size: 20px;
+            }
+
+            .animal {
+                transform: scale(0.7);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-box {
+                min-width: 250px;
+                padding: 20px 25px;
+            }
+
+            .login-title {
+                font-size: 22px;
+                margin-bottom: 20px;
+            }
+
+            .input-group {
+                margin-bottom: 15px;
+            }
+
+            .input-label {
+                font-size: 16px;
+            }
+
+            .minecraft-input {
+                padding: 8px 10px;
+                font-size: 16px;
+            }
+
+            .steve-head-btn {
+                width: 60px;
+                height: 60px;
+            }
+
+            .steve-eye {
+                width: 10px;
+                height: 10px;
+            }
+
+            .steve-face-eyes {
+                gap: 12px;
+            }
+
+            .welcome-title {
+                font-size: 28px;
+            }
+
+            .welcome-subtitle {
+                font-size: 16px;
+            }
+        }
+
+        /* ===== PC ENHANCED STYLES ===== */
+        @media (min-width: 1200px) {
+            .login-box {
+                min-width: 400px;
+                padding: 40px 50px;
+            }
+
+            .login-title {
+                font-size: 42px;
+            }
+
+            .minecraft-input {
+                padding: 15px 20px;
+                font-size: 24px;
+            }
+
+            .steve-head-btn {
+                width: 100px;
+                height: 100px;
+            }
+
+            .login-text {
+                font-size: 24px;
+                bottom: -35px;
+            }
+
+            .block {
+                width: 60px;
+                height: 60px;
+            }
+
+            .tree {
+                transform: scale(1.3);
+            }
+
+            .steve, .alex {
+                transform: scale(1.2);
+            }
+
+            .sun {
+                width: 100px;
+                height: 100px;
+            }
+
+            .welcome-title {
+                font-size: 86px;
+            }
+
+            .welcome-subtitle {
+                font-size: 42px;
+            }
+
+            .cloud {
+                transform: scale(1.5);
+            }
+
+            .animal {
+                transform: scale(1.3);
+            }
+        }
+
+        /* Loading Indicator */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1a1a2e;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-bar-container {
+            width: 300px;
+            height: 20px;
+            background: #333;
+            border: 3px solid #555;
+            overflow: hidden;
+        }
+
+        .loading-bar {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, #5D8C3E, #7CB342);
+            animation: loadingProgress 2s ease forwards;
+        }
+
+        @keyframes loadingProgress {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        .loading-text {
+            color: #FFF;
+            font-size: 24px;
+            margin-top: 20px;
+            animation: loadingPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes loadingPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-overlay" id="loadingScreen">
+        <div class="loading-bar-container">
+            <div class="loading-bar"></div>
+        </div>
+        <div class="loading-text">Loading Minecraft World...</div>
+    </div>
+
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+        <!-- World Background -->
+        <div class="world-background">
+            <!-- Sun -->
+            <div class="sun"></div>
+
+            <!-- Clouds -->
+            <div class="clouds">
+                <div class="cloud cloud-1"></div>
+                <div class="cloud cloud-2"></div>
+                <div class="cloud cloud-3"></div>
+            </div>
+
+            <!-- Trees -->
+            <div class="tree tree-1">
+                <div class="tree-leaves"></div>
+                <div class="tree-trunk"></div>
+            </div>
+            <div class="tree tree-2">
+                <div class="tree-leaves"></div>
+                <div class="tree-trunk"></div>
+            </div>
+            <div class="tree tree-3">
+                <div class="tree-leaves"></div>
+                <div class="tree-trunk"></div>
+            </div>
+
+            <!-- Characters -->
+            <div class="character steve">
+                <div class="steve-head">
+                    <div class="steve-eyes"></div>
+                </div>
+                <div class="steve-body"></div>
+                <div class="steve-legs">
+                    <div class="steve-leg"></div>
+                    <div class="steve-leg"></div>
+                </div>
+            </div>
+
+            <div class="character alex">
+                <div class="alex-head"></div>
+                <div class="alex-body"></div>
+                <div class="alex-arm alex-arm-left"></div>
+                <div class="alex-arm alex-arm-right"></div>
+                <div class="alex-hoe"></div>
+                <div class="steve-legs">
+                    <div class="steve-leg"></div>
+                    <div class="steve-leg"></div>
+                </div>
+            </div>
+
+            <!-- Crops -->
+            <div class="crops">
+                <div class="wheat"></div>
+                <div class="wheat"></div>
+                <div class="wheat"></div>
+                <div class="wheat"></div>
+            </div>
+
+            <!-- Animals -->
+            <div class="animal pig">
+                <div class="pig-head">
+                    <div class="pig-snout"></div>
+                </div>
+                <div class="pig-body"></div>
+                <div class="pig-legs">
+                    <div class="pig-leg"></div>
+                    <div class="pig-leg"></div>
+                    <div class="pig-leg"></div>
+                    <div class="pig-leg"></div>
+                </div>
+            </div>
+
+            <div class="animal cow">
+                <div class="cow-head">
+                    <div class="cow-horns">
+                        <div class="cow-horn"></div>
+                        <div class="cow-horn"></div>
+                    </div>
+                </div>
+                <div class="cow-body"></div>
+                <div class="cow-legs">
+                    <div class="cow-leg"></div>
+                    <div class="cow-leg"></div>
+                    <div class="cow-leg"></div>
+                    <div class="cow-leg"></div>
+                </div>
+            </div>
+
+            <div class="animal chicken">
+                <div class="chicken-head">
+                    <div class="chicken-beak"></div>
+                    <div class="chicken-wattle"></div>
+                </div>
+                <div class="chicken-body"></div>
+                <div class="chicken-legs">
+                    <div class="chicken-leg-part"></div>
+                    <div class="chicken-leg-part"></div>
+                </div>
+            </div>
+
+            <!-- Ground -->
+            <div class="ground" id="ground"></div>
+        </div>
+
+        <!-- Login Box -->
+        <div class="login-container">
+            <div class="login-box">
+                <span class="minecraft-logo">⛏️ MINECRAFT ⛏️</span>
+                <h1 class="login-title">LOGIN</h1>
+                
+                <div class="input-group">
+                    <label class="input-label">Username</label>
+                    <input type="text" class="minecraft-input" id="username" placeholder="Enter your username..." autocomplete="off">
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Password</label>
+                    <input type="password" class="minecraft-input" id="password" placeholder="Enter your password..." autocomplete="off">
+                </div>
+
+                <div class="login-btn-container">
+                    <button class="login-btn" id="loginBtn" onclick="handleLogin()">
+                        <div class="steve-head-btn">
+                            <div class="steve-face">
+                                <div class="steve-hair"></div>
+                                <div class="steve-face-eyes">
+                                    <div class="steve-eye"></div>
+                                    <div class="steve-eye"></div>
+                                </div>
+                                <div class="steve-nose"></div>
+                                <div class="steve-mouth"></div>
+                            </div>
+                        </div>
+                        <span class="login-text">CLICK TO LOGIN</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Welcome Screen -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="minecraft-world">
+            <div class="dynamic-sky"></div>
+            
+            <!-- Stars -->
+            <div class="stars" id="stars"></div>
+            
+            <div class="camera-view" id="cameraView">
+                <!-- Mountains -->
+                <div class="mountains">
+                    <div class="mountain mountain-1"></div>
+                    <div class="mountain mountain-2"></div>
+                    <div class="mountain mountain-3"></div>
+                </div>
+
+                <!-- World Trees -->
+                <div class="world-elements">
+                    <div class="tree world-tree world-tree-1">
+                        <div class="tree-leaves"></div>
+                        <div class="tree-trunk"></div>
+                    </div>
+                    <div class="tree world-tree world-tree-2">
+                        <div class="tree-leaves"></div>
+                        <div class="tree-trunk"></div>
+                    </div>
+                    <div class="tree world-tree world-tree-3">
+                        <div class="tree-leaves"></div>
+                        <div class="tree-trunk"></div>
+                    </div>
+                    <div class="tree world-tree world-tree-4">
+                        <div class="tree-leaves"></div>
+                        <div class="tree-trunk"></div>
+                    </div>
+                </div>
+
+                <!-- Ground -->
+                <div class="world-ground"></div>
+            </div>
+
+            <!-- Particles -->
+            <div class="particles" id="particles"></div>
+
+            <!-- Welcome Message -->
+            <div class="welcome-message">
+                <h1 class="welcome-title">Welcome to Minecraft World</h1>
+                <p class="welcome-subtitle">Your adventure begins now...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Generate Ground Blocks
+        function generateGround() {
+            const ground = document.getElementById('ground');
+            const blockSize = window.innerWidth > 768 ? 50 : 30;
+            const blocksPerRow = Math.ceil(window.innerWidth / blockSize) + 2;
+            
+            // Generate grass row
+            const grassRow = document.createElement('div');
+            grassRow.className = 'ground-row';
+            for (let i = 0; i < blocksPerRow; i++) {
+                const block = document.createElement('div');
+                block.className = 'block grass-block';
+                block.style.width = blockSize + 'px';
+                block.style.height = blockSize + 'px';
+                grassRow.appendChild(block);
+            }
+            ground.appendChild(grassRow);
+            
+            // Generate dirt rows
+            for (let row = 0; row < 5; row++) {
+                const dirtRow = document.createElement('div');
+                dirtRow.className = 'ground-row';
+                for (let i = 0; i < blocksPerRow; i++) {
+                    const block = document.createElement('div');
+                    block.className = 'block dirt-block';
+                    block.style.width = blockSize + 'px';
+                    block.style.height = blockSize + 'px';
+                    dirtRow.appendChild(block);
+                }
+                ground.appendChild(dirtRow);
+            }
+        }
+
+        // Generate Stars
+        function generateStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                star.style.width = (Math.random() * 3 + 2) + 'px';
+                star.style.height = star.style.width;
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Generate Particles
+        function generateParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = (50 + Math.random() * 50) + '%';
+                particle.style.animationDelay = Math.random() * 4 + 's';
+                particle.style.background = ['#5D8C3E', '#8B5A2B', '#FFD700', '#87CEEB'][Math.floor(Math.random() * 4)];
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Random Camera Animation
+        function setRandomCameraAnimation() {
+            const cameraView = document.getElementById('cameraView');
+            const animations = [
+                'cameraMove 15s ease-in-out infinite',
+                'cameraPan 20s linear infinite',
+                'cameraZoom 10s ease-in-out infinite',
+                'cameraRotate 25s ease-in-out infinite'
+            ];
+            
+            // Add additional animation keyframes
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes cameraPan {
+                    0%, 100% { transform: translateX(-50px); }
+                    50% { transform: translateX(50px); }
+                }
+                @keyframes cameraZoom {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.1); }
+                }
+                @keyframes cameraRotate {
+                    0% { transform: rotate(-2deg) translateX(-20px); }
+                    50% { transform: rotate(2deg) translateX(20px); }
+                    100% { transform: rotate(-2deg) translateX(-20px); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            const randomAnimation = animations[Math.floor(Math.random() * animations.length)];
+            cameraView.style.animation = randomAnimation;
+        }
+
+        // Handle Login
+        function handleLogin() {
+            const loginBtn = document.getElementById('loginBtn');
+            const loginScreen = document.getElementById('loginScreen');
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            
+            // Add click animation
+            loginBtn.classList.add('clicked');
+            
+            // Play click sound effect (visual feedback)
+            loginBtn.style.transform = 'scale(0.9)';
+            
+            setTimeout(() => {
+                loginBtn.style.transform = 'scale(1)';
+                loginBtn.classList.remove('clicked');
+            }, 200);
+            
+            // Transition to welcome screen
+            setTimeout(() => {
+                loginScreen.classList.add('hidden');
+                welcomeScreen.classList.add('active');
+                setRandomCameraAnimation();
+            }, 500);
+        }
+
+        // Input Focus Effects
+        document.querySelectorAll('.minecraft-input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+
+            // Enter key to login
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleLogin();
+                }
+            });
+        });
+
+        // Button Hover Sound Effect (Visual)
+        document.getElementById('loginBtn').addEventListener('mouseenter', function() {
+            this.style.filter = 'brightness(1.2)';
+        });
+
+        document.getElementById('loginBtn').addEventListener('mouseleave', function() {
+            this.style.filter = 'brightness(1)';
+        });
+
+        // Loading Screen
+        window.addEventListener('load', function() {
+            generateGround();
+            generateStars();
+            generateParticles();
+            
+            setTimeout(() => {
+                document.getElementById('loadingScreen').classList.add('hidden');
+            }, 2500);
+        });
+
+        // Responsive Ground Regeneration
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                const ground = document.getElementById('ground');
+                ground.innerHTML = '';
+                generateGround();
+            }, 250);
+        });
+
+        // Touch Events for Mobile
+        if ('ontouchstart' in window) {
+            document.getElementById('loginBtn').addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                this.style.transform = 'scale(0.95)';
+            });
+            
+            document.getElementById('loginBtn').addEventListener('touchend', function(e) {
+                e.preventDefault();
+                this.style.transform = 'scale(1)';
+                handleLogin();
+            });
+        }
+
+        // Add parallax effect on mouse move (PC only)
+        if (window.innerWidth > 768) {
+            document.addEventListener('mousemove', function(e) {
+                const moveX = (e.clientX - window.innerWidth / 2) * 0.01;
+                const moveY = (e.clientY - window.innerHeight / 2) * 0.01;
+                
+                document.querySelectorAll('.tree').forEach((tree, index) => {
+                    const depth = (index + 1) * 0.5;
+                    tree.style.transform = `translateX(${moveX * depth}px) translateY(${moveY * depth}px)`;
+                });
+                
+                document.querySelectorAll('.cloud').forEach((cloud, index) => {
+                    const depth = (index + 1) * 0.3;
+                    cloud.style.marginTop = `${moveY * depth}px`;
+                });
+            });
+        }
+    </script>
+</body>
+</html>
